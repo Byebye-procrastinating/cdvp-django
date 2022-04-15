@@ -1,0 +1,11 @@
+.vscode/
+
+cdvp_env/
+test_field/
+**/__pycache__/
+**/migrations/
+
+*.sqlite3
+
+output.svg
+settings.ini
