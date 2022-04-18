@@ -1,3 +1,5 @@
+import io
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -5,7 +7,7 @@ from networkx.algorithms.community.modularity_max \
     import greedy_modularity_communities
 
  
-def visualize(G, output_filename):
+def visualize(G, format='png'):
     community_set = greedy_modularity_communities(G)
     n, nc = 0, len(community_set)
     for community in community_set:
@@ -18,8 +20,8 @@ def visualize(G, output_filename):
     community_G = nx.Graph()
     for u in range(nc):
         community_G.add_node(u)
-    community_center = nx.kamada_kawai_layout(community_G, scale=2.5)
-    # community_center = nx.spring_layout(community_G, scale=2.5)
+    community_center = nx.spring_layout(community_G, scale=2.5)
+    # community_center = nx.kamada_kawai_layout(community_G, scale=2.5)
 
     G_pos = {}
     for idx, community in enumerate(community_set):
@@ -29,7 +31,8 @@ def visualize(G, output_filename):
             vertex_idx[u] = idx
 
         center = community_center[idx]
-        community_pos[idx] = nx.random_layout(communities[idx], center=center)
+        community_pos[idx] = nx.spring_layout(communities[idx], center=center)
+        # community_pos[idx] = nx.random_layout(communities[idx], center=center)
         G_pos.update(community_pos[idx])
 
     inner_edges, outer_edges = [], []
@@ -55,4 +58,7 @@ def visualize(G, output_filename):
 
     fig.tight_layout()
     plt.axis('off')
-    plt.savefig(output_filename)
+
+    ret = io.StringIO()
+    plt.savefig(ret, format=format)
+    return ret
