@@ -1,9 +1,10 @@
 {% extends "visualize/base.html" %}
+
 {% load django_bootstrap5 %}
 {% load static %}
 
 {% block content %}
-  
+
   <div style="text-align: center; width: 500px; float: left;">
     <form action="{% url 'visualize:index' %}" method="post">
       {% csrf_token %}

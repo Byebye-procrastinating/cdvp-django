@@ -7,7 +7,9 @@ from networkx.algorithms.community.modularity_max \
     import greedy_modularity_communities
 
  
-def visualize(G, format='png'):
+def visualize(G, format):
+    mpl.use('svg')
+
     community_set = greedy_modularity_communities(G)
     n, nc = 0, len(community_set)
     for community in community_set:
@@ -47,7 +49,10 @@ def visualize(G, format='png'):
 
     for idx in range(nc):
         pos = community_pos[idx]
-        color = mpl.colors.to_hex(color_map(idx / (nc - 1)))
+        if nc > 1:
+            color = mpl.colors.to_hex(color_map(idx / (nc - 1)))
+        else:
+            color = mpl.colors.to_hex(color_map(idx))
         nx.draw_networkx_nodes(communities[idx], pos,
             node_size = 50, node_color=color, edgecolors='grey')
     nx.draw_networkx_edges(G, G_pos,
@@ -56,9 +61,10 @@ def visualize(G, format='png'):
         edgelist=inner_edges, edge_color='grey')
     # nx.draw_networkx_labels(G, G_pos, font_size=12)
 
-    fig.tight_layout()
     plt.axis('off')
+    plt.tight_layout()
 
-    ret = io.StringIO()
-    plt.savefig(ret, format=format)
-    return ret
+    ret_svg = io.StringIO()
+    plt.savefig(ret_svg, format='svg')
+    plt.close()
+    return ret_svg
