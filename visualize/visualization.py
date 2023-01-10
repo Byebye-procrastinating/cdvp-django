@@ -1,3 +1,9 @@
+import os
+import sys
+path=os.path.abspath('.')
+sys.path.append(path+r'\Algorithm from cpp')
+import algorithm_from_cpp
+
 import io
 
 import matplotlib as mpl
@@ -11,7 +17,10 @@ def visualize(G, format):
     mpl.use('svg')
     # 进行可视化划分，接口详解见下文
 
-    community_set = greedy_modularity_communities(G)             # 返回社区的列表，元素为每个社区的不可变集合
+
+    EDGE = [list(x) for x in G.edges]
+    # community_set = greedy_modularity_communities(G)             # 返回社区的列表，元素为每个社区的不可变集合
+    community_set = algorithm_from_cpp.LabelPropagation(EDGE,len(G.nodes)) # self.algorithm
     n, nc = 0, len(community_set)                                # n - 节点数 ; nc - 社区个数
     for community in community_set:                              # 优化？
         n += len(community)
