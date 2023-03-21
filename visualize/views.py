@@ -1,15 +1,14 @@
-import io
-
 from django.shortcuts import render
-from django.http import FileResponse
 import networkx as nx
+from networkx.algorithms.community.modularity_max \
+    import greedy_modularity_communities
 
 from .forms import GraphInputForm
-from .visualization import visualize
+from .visualization import visualize, size_distribution
 
 
 def index(request):
-    graph_svg_str = ''
+    graph_svg_str, size_distribution_svg_str = '', ''
 
     if request.method != 'POST':
         form = GraphInputForm()
@@ -24,10 +23,17 @@ def index(request):
             for i in range(0, ne, 2):
                 u, v = int(edge_list[i]), int(edge_list[i + 1])
                 G.add_edge(u, v)
-            graph_svg = visualize(G, 'svg')
+            graph_svg = visualize(G, greedy_modularity_communities, 'svg')
             graph_svg_str = graph_svg.getvalue()
+            size_distribution_svg = size_distribution(
+                G, greedy_modularity_communities, 'svg')
+            size_distribution_svg_str = size_distribution_svg.getvalue()
 
-    content = {'form': form, 'graph_svg': graph_svg_str }
+    content = {
+        'form': form,
+        'graph_svg': graph_svg_str,
+        'size_distribution_svg': size_distribution_svg_str,
+        }
     return render(request, 'visualize/index.html', content)
 
 def features(request):

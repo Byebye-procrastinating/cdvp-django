@@ -8,19 +8,17 @@ import io
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import networkx as nx
-from networkx.algorithms.community.modularity_max \
-    import greedy_modularity_communities
 
  
-def visualize(G, format):
+def visualize(G, detection_algo, format):
     mpl.use('svg')
     # 进行可视化划分，接口详解见下文
 
-
-    EDGE = [list(x) for x in G.edges]
+    community_set = detection_algo(G)
     # community_set = greedy_modularity_communities(G)             # 返回社区的列表，元素为每个社区的不可变集合
-    community_set = algorithm_from_cpp.LabelPropagation(EDGE,len(G.nodes)) # self.algorithm
+    # community_set = algorithm_from_cpp.LabelPropagation(EDGE,len(G.nodes)) # self.algorithm
     n, nc = 0, len(community_set)                                # n - 节点数 ; nc - 社区个数
     for community in community_set:                              # 优化？
         n += len(community)
@@ -36,7 +34,7 @@ def visualize(G, format):
     # community_center = nx.kamada_kawai_layout(community_G, scale=2.5)
 
     G_pos = {}
-    for idx, community in enumerate(community_set):              # 对于每个社区内部进行建图
+    for idx, community in enumerate(community_set):             # 对于每个社区内部进行建图
         communities[idx] = nx.Graph()
         for u in community:
             communities[idx].add_node(u)
@@ -77,4 +75,27 @@ def visualize(G, format):
     ret_svg = io.StringIO()
     plt.savefig(ret_svg, format='svg')
     plt.close()
+    return ret_svg
+
+# 根据 detection_algo 对应的算法计算 G 社区划分后, 每个社区大小的分布
+# 并按照 format 的格式要求得到输出
+def size_distribution(G, detection_algo, format):
+    mpl.use('svg')
+
+    community_set = detection_algo(G)
+    community_size = [len(community) for community in community_set]
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    plt.stem(community_size)
+
+    ax.set_xlabel('Community Index')
+    ax.set_ylabel('Size')
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+    plt.tight_layout()
+
+    ret_svg = io.StringIO()
+    plt.savefig(ret_svg, format='svg')
+    plt.close()
+    print(ret_svg)
     return ret_svg
