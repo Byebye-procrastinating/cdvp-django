@@ -1,7 +1,6 @@
 .vscode/
 
 cdvp_env/
-test_field/
 **/__pycache__/
 **/migrations/
 
