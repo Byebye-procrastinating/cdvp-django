@@ -88,6 +88,7 @@ def size_distribution(G, detection_algo, format):
     fig, ax = plt.subplots(figsize=(5, 5))
     plt.stem(community_size)
 
+    plt.title('Size Distribution')
     ax.set_xlabel('Community Index')
     ax.set_ylabel('Size')
     ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
@@ -97,5 +98,4 @@ def size_distribution(G, detection_algo, format):
     ret_svg = io.StringIO()
     plt.savefig(ret_svg, format='svg')
     plt.close()
-    print(ret_svg)
     return ret_svg
