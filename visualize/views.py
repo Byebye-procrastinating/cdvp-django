@@ -15,10 +15,11 @@ def index(request):
     else:
         form = GraphInputForm(request.POST)
         if form.is_valid():
-            GraphInput = form.save(commit=False)
+            current_graph = form.cleaned_data['graph_input']
+            # current_graph = form.save(commit=False)
 
             G = nx.Graph()
-            edge_list = str(GraphInput.graph_data).split()
+            edge_list = str(current_graph).split()
             ne = len(edge_list)
             for i in range(0, ne, 2):
                 u, v = int(edge_list[i]), int(edge_list[i + 1])

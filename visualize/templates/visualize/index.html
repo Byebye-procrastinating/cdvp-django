@@ -7,21 +7,21 @@
 
   <div style="text-align: center; width: 500px; float: left;">
     <form action="{% url 'visualize:index' %}" method="post">
+      <div style="text-align: right;">
+        {% bootstrap_button "Draw" button_type="submit" button_class="btn-outline-primary btn-sm" %}
+      </div>
+
       {% csrf_token %}
       {% bootstrap_form form %}
-
-      {% bootstrap_button "Draw" button_type="submit" button_class="btn-outline-primary btn-sm" %}
-
-      <div style="text-align: left;" class="btn-group" role="group">
-        {% bootstrap_button "Download as PNG" button_type="button" button_class="btn-secondary btn-sm" %}
-        {% bootstrap_button "Download as PDF" button_type="button" button_class="btn-secondary btn-sm" %}
-        {% bootstrap_button "Download as SVG" button_type="button" button_class="btn-secondary btn-sm" %}
-      </div>
     </form>
   </div>
 
   <div style="width: 500px; float: right;">
-
+    <div style="text-align: left;" class="btn-group" role="group">
+      {% bootstrap_button "Download as PNG" button_type="button" button_class="btn-secondary btn-sm" %}
+      {% bootstrap_button "Download as PDF" button_type="button" button_class="btn-secondary btn-sm" %}
+      {% bootstrap_button "Download as SVG" button_type="button" button_class="btn-secondary btn-sm" %}
+    </div>
     {% autoescape off %}
       {{ graph_svg }}
       {{ size_distribution_svg }}
