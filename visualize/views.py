@@ -18,17 +18,15 @@ def index(request):
     else:
         form = GraphInputForm(request.POST)
         if form.is_valid():
-            current_data = form.cleaned_data['graph_input']
-
-            G = nx.Graph()
-            edge_list = str(current_data).split()
+            graph = nx.Graph()
+            edge_list = form.cleaned_data['graph_input'].split()
             ne = len(edge_list)
             for i in range(0, ne, 2):
                 u, v = int(edge_list[i]), int(edge_list[i + 1])
-                G.add_edge(u, v)
-            graph_svg = graphviz(G, greedy_modularity_communities, 'svg')
+                graph.add_edge(u, v)
+            graph_svg = graphviz(graph, greedy_modularity_communities, 'svg')
             size_distribution_svg = size_distribution(
-                G, greedy_modularity_communities, 'svg')
+                graph, greedy_modularity_communities, 'svg')
 
     content = {
         'form_graph_input': form,
@@ -41,7 +39,8 @@ def index(request):
 
 # 根据输入的点数和边数生成随机图
 def generate_random_graph(request):
-    form_graph_input = GraphInputForm()
+    graph_svg = io.StringIO()
+    size_distribution_svg = io.StringIO()
 
     if request.method != 'POST':
         form = RandomGraphForm()
@@ -49,13 +48,18 @@ def generate_random_graph(request):
         form = RandomGraphForm(request.POST)
         if form.is_valid():
             node_count = form.cleaned_data['node_count']
-            edge_count = form.cleaned_data['edge_count']
+            probability = form.cleaned_data['probability']
+
+            graph = nx.fast_gnp_random_graph(node_count, probability)
+            graph_svg = graphviz(graph, greedy_modularity_communities, 'svg')
+            size_distribution_svg = size_distribution(
+                graph, greedy_modularity_communities, 'svg')
 
     content = {
-        'form_graph_input': form_graph_input,
+        'form_graph_input': GraphInputForm(),
         'form_random_graph': form,
-        'graph_svg': '',
-        'size_distribution_svg': '',
+        'graph_svg': graph_svg.getvalue(),
+        'size_distribution_svg': size_distribution_svg.getvalue(),
         }
     return render(request, 'visualize/index.html', content)
 
