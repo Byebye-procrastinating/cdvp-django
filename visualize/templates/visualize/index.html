@@ -5,14 +5,25 @@
 
 {% block content %}
 
-  <div style="text-align: center; width: 500px; float: left;">
+  <div style="text-align: left; width: 500px; float: left;">
+    <form action="{% url 'visualize:generate_random_graph' %}" method="post">
+      <div style="text-align: right;">
+        {% bootstrap_button "Random Generate" button_class="btn-outline-primary btn-sm" %}
+      </div>
+
+      <div class="row row-cols-lg-auto g-3 align-items-center">
+        {% csrf_token %}
+        {% bootstrap_form form_random_graph %}
+      </div>
+    </form>
+
     <form action="{% url 'visualize:index' %}" method="post">
       <div style="text-align: right;">
-        {% bootstrap_button "Draw" button_type="submit" button_class="btn-outline-primary btn-sm" %}
+        {% bootstrap_button "Draw" button_class="btn-primary btn-sm" %}
       </div>
 
       {% csrf_token %}
-      {% bootstrap_form form %}
+      {% bootstrap_form form_graph_input %}
     </form>
   </div>
 

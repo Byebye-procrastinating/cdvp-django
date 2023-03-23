@@ -2,7 +2,7 @@ import os
 import sys
 path=os.path.abspath('.')
 sys.path.append(path+r'\Algorithm from cpp')
-import algorithm_from_cpp
+# import algorithm_from_cpp
 
 import io
 
@@ -12,7 +12,7 @@ import matplotlib.ticker as ticker
 import networkx as nx
 
  
-def visualize(G, detection_algo, format):
+def graphviz(G, detection_algo, format):
     mpl.use('svg')
     # 进行可视化划分，接口详解见下文
 
@@ -76,6 +76,7 @@ def visualize(G, detection_algo, format):
     plt.savefig(ret_svg, format='svg')
     plt.close()
     return ret_svg
+
 
 # 根据 detection_algo 对应的算法计算 G 社区划分后, 每个社区大小的分布
 # 并按照 format 的格式要求得到输出
