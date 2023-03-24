@@ -10,4 +10,5 @@ urlpatterns = [
     path('about', views.about, name='about'),
 
     path('generate', views.generate, name='generate'),
+    path('visualize', views.visualize, name='visualize'),
 ]

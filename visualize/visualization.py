@@ -12,12 +12,11 @@ import matplotlib.ticker as ticker
 import networkx as nx
 
  
-def graphviz(G, detection_algo, format):
+def graph_viz(G, detection_algo, layout_algo):
     mpl.use('svg')
     # 进行可视化划分，接口详解见下文
 
-    community_set = detection_algo(G)
-    # community_set = greedy_modularity_communities(G)             # 返回社区的列表，元素为每个社区的不可变集合
+    community_set = detection_algo(G) # 返回社区的列表，元素为每个社区的不可变集合
     # community_set = algorithm_from_cpp.LabelPropagation(EDGE,len(G.nodes)) # self.algorithm
     n, nc = 0, len(community_set)                                # n - 节点数 ; nc - 社区个数
     for community in community_set:                              # 优化？
@@ -30,8 +29,7 @@ def graphviz(G, detection_algo, format):
     community_G = nx.Graph()                                    # 缩点，对于社区进行建图
     for u in range(nc):                                         # 获取缩点的编号
         community_G.add_node(u)
-    community_center = nx.spring_layout(community_G, scale=2.5) # 对社区进行位置划分
-    # community_center = nx.kamada_kawai_layout(community_G, scale=2.5)
+    community_center = layout_algo(community_G, scale=2.5) # 对社区进行位置划分
 
     G_pos = {}
     for idx, community in enumerate(community_set):             # 对于每个社区内部进行建图
@@ -41,8 +39,7 @@ def graphviz(G, detection_algo, format):
             vertex_idx[u] = idx
 
         center = community_center[idx]                           # 获取该社区的位置
-        community_pos[idx] = nx.spring_layout(communities[idx], center=center)          # 社区内部进行位置划分，围绕所在社区定的位置进行位置确定
-        # community_pos[idx] = nx.random_layout(communities[idx], center=center)
+        community_pos[idx] = layout_algo(communities[idx], center=center)          # 社区内部进行位置划分，围绕所在社区定的位置进行位置确定
         G_pos.update(community_pos[idx])
 
     inner_edges, outer_edges = [], []                            # 社区内部边，社区外部边进行分类
@@ -80,7 +77,7 @@ def graphviz(G, detection_algo, format):
 
 # 根据 detection_algo 对应的算法计算 G 社区划分后, 每个社区大小的分布
 # 并按照 format 的格式要求得到输出
-def size_distribution(G, detection_algo, format):
+def size_distribution(G, detection_algo):
     mpl.use('svg')
 
     community_set = detection_algo(G)
@@ -100,3 +97,9 @@ def size_distribution(G, detection_algo, format):
     plt.savefig(ret_svg, format='svg')
     plt.close()
     return ret_svg
+
+
+# 计算按 detection_algo 对应算法社区划分后, 所得社区的模块度
+def calc_modularity(graph, detection_algo):
+    community_set = detection_algo(graph)
+    return nx.modularity(graph, community_set)
