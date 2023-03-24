@@ -1,0 +1,30 @@
+{% extends "visualize/base.html" %}
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block content %}
+
+  <div style="text-align: left; width: 500px; float: left;">
+    <form action="{% url 'visualize:application' %}" method="post">
+      <div style="text-align: right;">
+        {% bootstrap_button "Draw" button_class="btn-primary btn-sm" %}
+      </div>
+
+      {% csrf_token %}
+      {% bootstrap_form form_graph_input %}
+    </form>
+  </div>
+
+  <div style="width: 500px; float: right;">
+    <div style="text-align: left;" class="btn-group" role="group">
+      {% bootstrap_button "Download as PNG" button_type="button" button_class="btn-secondary btn-sm" %}
+      {% bootstrap_button "Download as PDF" button_type="button" button_class="btn-secondary btn-sm" %}
+      {% bootstrap_button "Download as SVG" button_type="button" button_class="btn-secondary btn-sm" %}
+    </div>
+    {% autoescape off %}
+      {{ graph_svg }}
+      {#{{ size_distribution_svg }}#}
+    {% endautoescape %}
+  </div>
+  
+{% endblock content %}

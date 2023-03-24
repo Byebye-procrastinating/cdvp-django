@@ -5,11 +5,11 @@ import networkx as nx
 from networkx.algorithms.community.modularity_max \
     import greedy_modularity_communities
 
-from .forms import GraphInputForm, RandomGraphForm
+from .forms import GraphInputForm
 from .visualization import graphviz, size_distribution
 
 
-def index(request):
+def application(request):
     graph_svg = io.StringIO()
     size_distribution_svg = io.StringIO()
 
@@ -30,38 +30,18 @@ def index(request):
 
     content = {
         'form_graph_input': form,
-        'form_random_graph': RandomGraphForm(),
         'graph_svg': graph_svg.getvalue(),
         'size_distribution_svg': size_distribution_svg.getvalue(),
         }
-    return render(request, 'visualize/index.html', content)
+    return render(request, 'visualize/application.html', content)
 
 
-# 根据输入的点数和边数生成随机图
-def generate_random_graph(request):
-    graph_svg = io.StringIO()
-    size_distribution_svg = io.StringIO()
+# TODO: 根据输入生成满足对应要求的图
+def generate(request):
+    pass
 
-    if request.method != 'POST':
-        form = RandomGraphForm()
-    else:
-        form = RandomGraphForm(request.POST)
-        if form.is_valid():
-            node_count = form.cleaned_data['node_count']
-            probability = form.cleaned_data['probability']
-
-            graph = nx.fast_gnp_random_graph(node_count, probability)
-            graph_svg = graphviz(graph, greedy_modularity_communities, 'svg')
-            size_distribution_svg = size_distribution(
-                graph, greedy_modularity_communities, 'svg')
-
-    content = {
-        'form_graph_input': GraphInputForm(),
-        'form_random_graph': form,
-        'graph_svg': graph_svg.getvalue(),
-        'size_distribution_svg': size_distribution_svg.getvalue(),
-        }
-    return render(request, 'visualize/index.html', content)
+def index(request):
+    return render(request, 'visualize/index.html')
 
 def features(request):
     return render(request, 'visualize/features.html')

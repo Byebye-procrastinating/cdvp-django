@@ -5,38 +5,50 @@
 
 {% block content %}
 
-  <div style="text-align: left; width: 500px; float: left;">
-    <form action="{% url 'visualize:generate_random_graph' %}" method="post">
-      <div style="text-align: right;">
-        {% bootstrap_button "Random Generate" button_class="btn-outline-primary btn-sm" %}
-      </div>
-
-      <div class="row row-cols-lg-auto g-3 align-items-center">
-        {% csrf_token %}
-        {% bootstrap_form form_random_graph %}
-      </div>
-    </form>
-
-    <form action="{% url 'visualize:index' %}" method="post">
-      <div style="text-align: right;">
-        {% bootstrap_button "Draw" button_class="btn-primary btn-sm" %}
-      </div>
-
-      {% csrf_token %}
-      {% bootstrap_form form_graph_input %}
-    </form>
-  </div>
-
-  <div style="width: 500px; float: right;">
-    <div style="text-align: left;" class="btn-group" role="group">
-      {% bootstrap_button "Download as PNG" button_type="button" button_class="btn-secondary btn-sm" %}
-      {% bootstrap_button "Download as PDF" button_type="button" button_class="btn-secondary btn-sm" %}
-      {% bootstrap_button "Download as SVG" button_type="button" button_class="btn-secondary btn-sm" %}
+<div class="container col-xxl-8 px-4 py-5">
+  <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+    <div class="col-10 col-sm-8 col-lg-6">
+      <img src="static/img/example.png" class="d-block mx-lg-auto img-fluid" width="700" height="500" loading="lazy">
     </div>
-    {% autoescape off %}
-      {{ graph_svg }}
-      {{ size_distribution_svg }}
-    {% endautoescape %}
+    <div class="col-lg-6">
+      <h1 class="display-6 fw-bold lh-1 mb-3">Community Detection Visualization Platform</h1>
+      <p class="lead">A brief introduction about community detectioin visualization platform.</p>
+      <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+        <a href="{% url 'visualize:application' %}">
+          <button type="button" class="btn btn-primary btn-lg px-4 me-md-2">
+            Try it now
+          </button>
+        </a>
+        <a href="{% url 'visualize:features' %}">
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4">
+            Learn more
+          </button>
+        </a>
+      </div>
+    </div>
   </div>
+</div>
+
+<div class="container">
+  <footer class="py-3 my-4">
+    <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+      <li class="nav-item">
+        <a href="{% url 'visualize:index' %}" class="nav-link px-2 text-muted">Home</a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'visualize:features' %}" class="nav-link px-2 text-muted">Features</a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'visualize:application' %}" class="nav-link px-2 text-muted">Application</a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'visualize:about' %}" class="nav-link px-2 text-muted">About</a>
+      </li>
+    </ul>
+    <p class="text-center text-muted">
+      &copy; 2022-2023 <a href="https://github.com/Byebye-procrastinating">Byebye-procrastinating</a>.
+    </p>
+  </footer>
+</div>
 
 {% endblock content %}
