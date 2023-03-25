@@ -102,4 +102,4 @@ def size_distribution(G, detection_algo):
 # 计算按 detection_algo 对应算法社区划分后, 所得社区的模块度
 def calc_modularity(graph, detection_algo):
     community_set = detection_algo(graph)
-    return nx.modularity(graph, community_set)
+    return nx.algorithms.community.quality.modularity(graph, community_set)
