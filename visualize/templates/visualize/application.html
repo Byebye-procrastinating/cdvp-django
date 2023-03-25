@@ -1,27 +1,43 @@
 {% extends "visualize/base.html" %}
+
 {% load django_bootstrap5 %}
 {% load static %}
 
 {% block content %}
 
-  <div style="text-align: left; width: 500px; float: left;">
+  <div class="container">
     <form action="{% url 'visualize:application' %}" method="post">
       {% csrf_token %}
-      {% bootstrap_form form_graph_input %}
-
-      <div style="text-align: right;">
-        {% bootstrap_button "Draw" button_class="btn-primary btn-sm" %}
+      <div class="row row-cols-2">
+        <div class="col">
+          {% bootstrap_field form_graph_input.graph_input %}
+        </div>
+        <div class="col">
+          {% bootstrap_field form_graph_input.methods %}
+          {% bootstrap_field form_graph_input.layout %}
+          {% bootstrap_button "Draw" button_class="btn-primary btn-sm" %}
+        </div>
       </div>
     </form>
-  </div>
-
-  <div style="width: 500px; float: right;">
     {% for result in results %}
-      Modularity: {{ result.modularity }}
-      {% autoescape off %}
-        {{ result.graph_viz }}
-        {{ result.size_distribution }}
-      {% endautoescape %}
+      <h3>
+        {{ result.method }}
+      </h3>
+      <div class="row">
+        <div class="col-xs">
+          Modularity: {{ result.modularity }}
+        </div>
+        <div class="col">
+          {% autoescape off %}
+            {{ result.graph_viz }}
+          {% endautoescape %}
+        </div>
+        <div class="col">
+          {% autoescape off %}
+            {{ result.size_distribution }}
+          {% endautoescape %}
+        </div>
+      </div>
     {% endfor %}
   </div>
 

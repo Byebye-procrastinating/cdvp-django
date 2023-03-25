@@ -43,6 +43,7 @@ def process_methods(graph, layout, methods):
     for method in methods:
         callable_method = choose_algo(method)
         current = {}
+        current['method'] = method.replace('_', ' ').title()
         current['modularity'] = calc_modularity(graph, callable_method)
         current['graph_viz'] = graph_viz(
             graph, callable_method, layout_algo).getvalue()
@@ -119,8 +120,6 @@ def application(request):
         'form_graph_input': form,
         'results': results,
         }
-    for result in results:
-        print(len(result))
     return render(request, 'visualize/application.html', content)
 
 def about(request):

@@ -8,7 +8,7 @@ METHOD_CHOICES = (
     )
 LAYOUT_CHOICES = (
     ('spring', 'spring'),
-    ('random', 'random'),
+    # ('random', 'random'),
     )
 
 class GraphVizForm(forms.Form):

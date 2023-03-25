@@ -29,7 +29,7 @@ def graph_viz(G, detection_algo, layout_algo):
     community_G = nx.Graph()                                    # 缩点，对于社区进行建图
     for u in range(nc):                                         # 获取缩点的编号
         community_G.add_node(u)
-    community_center = layout_algo(community_G, scale=2.5) # 对社区进行位置划分
+    community_center = layout_algo(community_G, scale=3.5) # 对社区进行位置划分
 
     G_pos = {}
     for idx, community in enumerate(community_set):             # 对于每个社区内部进行建图
