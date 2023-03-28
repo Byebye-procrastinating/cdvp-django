@@ -11,6 +11,8 @@
       <div class="row row-cols-2">
         <div class="col">
           {% bootstrap_field form_graph_input.graph_input %}
+          {% bootstrap_field form_graph_input.graph_type %}
+          {% bootstrap_field form_graph_input.graph_weighted %}
         </div>
         <div class="col">
           {% bootstrap_field form_graph_input.methods %}
@@ -26,6 +28,8 @@
       <div class="row">
         <div class="col-xs">
           Modularity: {{ result.modularity }}
+          <br>
+          Coverage: {{ result.coverage }} Performance: {{ result.performance }}
         </div>
         <div class="col">
           {% autoescape off %}

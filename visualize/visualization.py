@@ -12,11 +12,15 @@ import matplotlib.ticker as ticker
 import networkx as nx
 
  
-def graph_viz(G, detection_algo, layout_algo):
+def graph_viz(G, detection_algo, layout_algo, is_weighted=False):
     mpl.use('svg')
     # 进行可视化划分，接口详解见下文
 
-    community_set = detection_algo(G) # 返回社区的列表，元素为每个社区的不可变集合
+    # community_set: 社区的列表，元素为每个社区的集合
+    if is_weighted:
+        community_set = detection_algo(G, weight='weight')
+    else:
+        community_set = detection_algo(G)
     # community_set = algorithm_from_cpp.LabelPropagation(EDGE,len(G.nodes)) # self.algorithm
     n, nc = 0, len(community_set)                                # n - 节点数 ; nc - 社区个数
     for community in community_set:                              # 优化？
@@ -75,12 +79,15 @@ def graph_viz(G, detection_algo, layout_algo):
     return ret_svg
 
 
-# 根据 detection_algo 对应的算法计算 G 社区划分后, 每个社区大小的分布
+# 根据 detection_algo 对应的算法计算 graph 的社区划分后, 每个社区大小的分布
 # 并按照 format 的格式要求得到输出
-def size_distribution(G, detection_algo):
+def size_distribution(graph, detection_algo, is_weighted=False):
     mpl.use('svg')
 
-    community_set = detection_algo(G)
+    if is_weighted:
+        community_set = detection_algo(graph, weight='weight')
+    else:
+        community_set = detection_algo(graph)
     community_size = [len(community) for community in community_set]
 
     fig, ax = plt.subplots(figsize=(5, 5))
@@ -103,3 +110,9 @@ def size_distribution(G, detection_algo):
 def calc_modularity(graph, detection_algo):
     community_set = detection_algo(graph)
     return nx.algorithms.community.quality.modularity(graph, community_set)
+
+# 计算按 detection_algo 对应算法划分后, 所得 coverage 和 performance
+def calc_partition_quality(graph, detection_algo):
+    community_set = detection_algo(graph)
+    return nx.algorithms.community.quality.partition_quality(
+        graph, community_set)
