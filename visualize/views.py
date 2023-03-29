@@ -79,20 +79,44 @@ def visualize(request):
     if request.method == 'POST':
         req = json.loads(request.body)
         config = req.get('config')
-        graph_data = req.get('graph_data')
-        
         methods = config['methods']
         layout = config['layout']
+
+        graph_data = req.get('graph_data')
         graph = choose_graph(graph_data['graph_type'])
+        is_weighted = graph_data['weighted']
         if graph_data['weighted']:
             graph.add_weighted_edges_from(graph_data['edge_list'])
         else:
             graph.add_edges_from(graph_data['edge_list'])
 
         content = {
-            'results': process_methods(graph, layout, methods),
+            'results': process_methods(graph, layout, methods, is_weighted),
             }
         return JsonResponse(content)
+
+
+def get_example(network_name):
+    graph = nx.Graph()
+    if network_name == 'karate_club':
+        graph = nx.karate_club_graph()
+    if network_name == 'davis_southern_women':
+        graph = nx.davis_southern_women_graph()
+    if network_name == 'florentine_families':
+        graph = nx.florentine_families_graph()
+    if network_name == 'les_miserables':
+        graph = nx.les_miserables_graph()
+    return nx.convert_node_labels_to_integers(graph)
+
+# 根据请求
+def example(request):
+    if request.method == 'GET':
+        graph_json = {
+            'graph_type': 'graph',
+            'weighted': False,
+            'edge_list': list(get_example(request.GET['q']).edges),
+        }
+        return JsonResponse(graph_json)
 
 
 # TODO: 根据输入生成满足对应要求的图
