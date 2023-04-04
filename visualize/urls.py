@@ -9,7 +9,9 @@ urlpatterns = [
     path('application', views.application, name='application'),
     path('about', views.about, name='about'),
 
-    path('example', views.example, name='example'),
-    path('generate', views.generate, name='generate'),
-    path('visualize', views.visualize, name='visualize'),
+    path('api/example', views.example, name='example'),
+    path('api/generate/newman_watts_strogatz',
+         views.generate_newman_watts_strogatz,
+         name='generate_newman_watts_strogatz'),
+    path('api/visualize', views.visualize, name='visualize'),
 ]

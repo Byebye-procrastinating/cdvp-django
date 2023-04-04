@@ -49,10 +49,6 @@ def choose_graph(graph_type):
         return nx.Graph()
     if graph_type == 'digraph':
         return nx.DiGraph()
-    if graph_type == 'multigraph':
-        return nx.MultiGraph()
-    if graph_type == 'multidigraph':
-        return nx.MultiDiGraph()
 
 # 根据 layout 和 methods 的设置对 graph 施以可视化
 def process_methods(graph, layout, methods, is_weighted):
@@ -74,27 +70,51 @@ def process_methods(graph, layout, methods, is_weighted):
     return results
 
 
-# 根据 config 的格式限制和 graph_data 的数据得到图的可视化结果
 def visualize(request):
     if request.method == 'POST':
-        req = json.loads(request.body)
-        config = req.get('config')
-        methods = config['methods']
-        layout = config['layout']
+        data = request.POST
 
-        graph_data = req.get('graph_data')
+        config = json.loads(data['config'])
+        methods, layout = config['methods'], config['layout']
+
+        graph_data = json.loads(data['graph_data'])
         graph = choose_graph(graph_data['graph_type'])
         is_weighted = graph_data['weighted']
-        if graph_data['weighted']:
-            graph.add_weighted_edges_from(graph_data['edge_list'])
+
+        type = data['type']
+        if type == 'input':
+            edge_list = graph_data['edge_list']
+            if is_weighted:
+                graph.add_weighted_edges_from(edge_list)
+            else:
+                graph.add_edges_from(edge_list)
+        elif type == 'file':
+            edge_list = request.FILES.get('edge_list').read().split()
+            ne = len(edge_list)
+            if is_weighted:
+                for i in range(0, ne, 3):
+                    u, v, w = [int(val) for val in edge_list[i:i+3]]
+                    graph.add_edge(u, v, weight=w)
+            else:
+                for i in range(0, ne, 2):
+                    u, v = [int(val) for val in edge_list[i:i+2]]
+                    graph.add_edge(u, v)
+        elif type == 'example':
+            graph = get_example(graph_data['name'])
+        elif type == 'generate':
+            n, k, p = graph_data['n'], graph_data['k'], graph_data['p']
+            seed = None
+            if 'seed' in graph_data:
+                seed = graph_data['seed']
+            graph = nx.generators.random_graphs.newman_watts_strogatz_graph(
+                n, k, p, seed)
         else:
-            graph.add_edges_from(graph_data['edge_list'])
+            return JsonResponse()
 
         content = {
             'results': process_methods(graph, layout, methods, is_weighted),
             }
         return JsonResponse(content)
-
 
 def get_example(network_name):
     graph = nx.Graph()
@@ -108,7 +128,7 @@ def get_example(network_name):
         graph = nx.les_miserables_graph()
     return nx.convert_node_labels_to_integers(graph)
 
-# 根据请求
+# 根据请求选择样例
 def example(request):
     if request.method == 'GET':
         graph_json = {
@@ -119,17 +139,21 @@ def example(request):
         return JsonResponse(graph_json)
 
 
-# TODO: 根据输入生成满足对应要求的图
-def generate(request):
+# 根据输入生成对应 Newman–Watts–Strogatz small-world 图
+def generate_newman_watts_strogatz(request):
     if request.method == 'GET':
+        n, k = int(request.GET['n']), int(request.GET['k'])
+        p = float(request.GET['p'])
+        seed = None
+        if 'seed' in request.GET:
+            seed = int(request.GET['seed'])
         content = {
             "graph_data": "graph",
             "weighted": False,
-            "edge_list": [
-                [1, 2],
-                [3, 4],
-            ]
-            }
+            "edge_list":
+                list(nx.generators.random_graphs.newman_watts_strogatz_graph(
+                    n, k, p, seed).edges),
+        }
         return JsonResponse(content)
 
 
@@ -152,10 +176,10 @@ def application(request):
 
             graph = choose_graph(form.cleaned_data['graph_type'])
             edge_list = form.cleaned_data['graph_input'].split()
-            is_weight = form.cleaned_data['graph_weighted']
+            is_weighted = form.cleaned_data['graph_weighted']
 
             ne = len(edge_list)
-            if is_weight:
+            if is_weighted:
                 for i in range(0, ne, 3):
                     u, v, w = [int(val) for val in edge_list[i:i+3]]
                     graph.add_edge(u, v, weight=w)
@@ -164,7 +188,7 @@ def application(request):
                     u, v = [int(val) for val in edge_list[i:i+2]]
                     graph.add_edge(u, v)
 
-            results = process_methods(graph, layout, methods, is_weight)
+            results = process_methods(graph, layout, methods, is_weighted)
 
     content = {
         'form_graph_input': form,
