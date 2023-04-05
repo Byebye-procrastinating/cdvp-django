@@ -8,6 +8,7 @@ import networkx.algorithms.community as nx_com
 
 from .forms import GraphVizForm
 from .visualization import graph_viz, size_distribution
+from .docker_engine.docker_eni import get_output
 
 
 def easy_asyn_lpa_communities(G, weight=None, seed=None):
@@ -133,6 +134,17 @@ def visualize(request):
                 n, k, p, seed)
         else:
             return JsonResponse()
+
+        if config['custom_method']:
+            with default_storage.open(path + '/' + 'dataset', 'w') as f:
+                if is_weighted:
+                    weights = nx.get_edge_attributes(graph, 'weight')
+                    for edge in graph.edges:
+                        f.write(str(edge[0]) + ' ' + str(edge[1]) + str(weights[edge]) + '\n')
+                else:
+                    for edge in graph.edges:
+                        f.write(str(edge[0]) + ' ' + str(edge[1]) + '\n')
+            default_storage.save(path + '/' + 'dataset', f)
 
         content = {
             'results': process_methods(graph, layout, methods, is_weighted),
