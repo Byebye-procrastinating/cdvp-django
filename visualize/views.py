@@ -3,6 +3,7 @@ import json, os, time
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.shortcuts import render
+import karateclub.community_detection.non_overlapping as kc_com_n
 import networkx as nx
 import networkx.algorithms.community as nx_com
 
@@ -33,6 +34,27 @@ def choose_algo(graph, is_weighted, algorithm_name):
     if is_weighted:
         return algo(graph, weight='weight')
     return algo(graph)
+
+
+def choose_karateclub_algo(graph, model_name):
+    if model_name == 'GEMSEC':
+        model = kc_com_n.GEMSEC()
+    elif model_name == 'EdMot':
+        model = kc_com_n.EdMot()
+    elif model_name == 'SCD':
+        model = kc_com_n.SCD()
+    else:
+        raise RuntimeError('no model named ' + model_name)
+    model.fit(graph)
+    memberships = model.get_memberships()
+    community_set = {}
+    for x, com in memberships.items():
+        try:
+            community_set[com].append(x)
+        except:
+            community_set[com] = [x]
+    return [frozenset(l) for l in community_set.values()]
+
 
 # 根据 layout_name 得到对应布局方式
 def choose_layout(layout_name):
@@ -65,10 +87,22 @@ def process_methods(graph, layout, methods, is_weighted):
     layout_algo = choose_layout(layout)
     results = []
     for method in methods:
-        community_set = choose_algo(graph, is_weighted, method)
-
         current = {}
-        current['method'] = method.replace('_', ' ').title()
+
+        if method == 'custom':
+            community_set = {}
+            current['method'] = 'Custom'
+        elif 'karateclub' in method:
+            formed_method = method.split('_', 1)[-1]
+            community_set = choose_karateclub_algo(
+                graph.copy(), formed_method)
+            current['method'] = formed_method.replace('_', ' ')
+        else:
+            community_set = choose_algo(graph, is_weighted, method)
+            current['method'] = method.replace('_', ' ').title()
+
+        print(method, community_set)
+
         current['modularity'] = nx_com.quality.modularity(graph, community_set)
         current['coverage'], current['performance'] = \
             nx_com.quality.partition_quality(graph, community_set)
@@ -87,13 +121,6 @@ def visualize(request):
 
         config = json.loads(data['config'])
         methods, layout = config['methods'], config['layout']
-
-        if config['custom_method']:
-            file_list = request.FILES.getlist('code')
-            # TODO:  更改文件夹名 hash_code
-            path = (os.path.abspath('.') + '/hash_code').replace('\\', '/')
-            for file in file_list:
-                default_storage.save(path + '/' + file.name, file)
 
         graph_data = json.loads(data['graph_data'])
 
@@ -136,6 +163,12 @@ def visualize(request):
             return JsonResponse()
 
         if config['custom_method']:
+            file_list = request.FILES.getlist('code')
+            # TODO:  更改文件夹名 hash_code
+            path = (os.path.abspath('.') + '/hash_code').replace('\\', '/')
+            for file in file_list:
+                default_storage.save(path + '/' + file.name, file)
+
             with default_storage.open(path + '/' + 'dataset', 'w') as f:
                 if is_weighted:
                     weights = nx.get_edge_attributes(graph, 'weight')

@@ -1,8 +1,9 @@
-import docker
 import os
 from datetime import datetime
-import tarfile
 from io import BytesIO
+import tarfile
+
+import docker
 
 def build_docker_for_cpp(file,extension):
     client = docker.from_env()

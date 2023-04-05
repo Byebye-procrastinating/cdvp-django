@@ -4,14 +4,17 @@ from django import forms
 GRAPH_CHOICES = (
     ('graph', 'Undirected Graph'),
     ('digraph', 'Directed Graph'),
-    ('multigraph', 'Undirected Graph with Parallel Edges'),
-    ('multidigraph', 'Directed Graph with Parallel Edges'),
     )
 METHOD_CHOICES = (
+    # networkx
     ('greedy_modularity_maximization', 'Greedy Modularity Maximization'),
     ('louvain_community_detection', 'Louvain Community Detection'),
     ('label_propagation', 'Label Propagation'),
     ('asynchronous_label_propagation', 'Asynchronous Label Propagation'),
+    # karateclub
+    ('karateclub_GEMSEC', 'GEMSEC'),
+    ('karateclub_EdMot', 'EdMot'),
+    ('karateclub_SCD', 'SCD'),
     )
 LAYOUT_CHOICES = (
     ('spring', 'spring'),
