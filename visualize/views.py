@@ -1,5 +1,6 @@
-import json
+import json, os, time
 
+from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.shortcuts import render
 import networkx as nx
@@ -86,9 +87,12 @@ def visualize(request):
         config = json.loads(data['config'])
         methods, layout = config['methods'], config['layout']
 
-        if 'custom_method' in config:
-            # TODO: 自定义方法
-            pass
+        if config['custom_method']:
+            file_list = request.FILES.getlist('code')
+            # TODO:  更改文件夹名 hash_code
+            path = (os.path.abspath('.') + '/hash_code').replace('\\', '/')
+            for file in file_list:
+                default_storage.save(path + '/' + file.name, file)
 
         graph_data = json.loads(data['graph_data'])
 
