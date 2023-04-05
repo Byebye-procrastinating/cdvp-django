@@ -6,8 +6,7 @@ import networkx as nx
 import networkx.algorithms.community as nx_com
 
 from .forms import GraphVizForm
-from .visualization import graph_viz, size_distribution, \
-    calc_modularity, calc_partition_quality
+from .visualization import graph_viz, size_distribution
 
 
 def easy_asyn_lpa_communities(G, weight=None, seed=None):
@@ -18,15 +17,20 @@ def easy_asyn_lpa_communities(G, weight=None, seed=None):
     return community_set
 
 # 根据 algorithm_name 得到对应算法
-def choose_algo(algorithm_name):
+def choose_algo(graph, is_weighted, algorithm_name):
     if algorithm_name == 'greedy_modularity_maximization':
-        return nx_com.greedy_modularity_communities
-    if algorithm_name == 'louvain_community_detection':
-        return nx_com.louvain.louvain_communities
-    if algorithm_name == 'label_propagation':
-        return nx_com.label_propagation_communities
-    if algorithm_name == 'asynchronous_label_propagation':
-        return easy_asyn_lpa_communities
+        algo = nx_com.greedy_modularity_communities
+    elif algorithm_name == 'louvain_community_detection':
+        algo = nx_com.louvain.louvain_communities
+    elif algorithm_name == 'label_propagation':
+        algo = nx_com.label_propagation_communities
+    elif algorithm_name == 'asynchronous_label_propagation':
+        algo = easy_asyn_lpa_communities
+    else:
+        raise RuntimeError('no method named ' + algorithm_name)
+    if is_weighted:
+        return algo(graph, weight='weight')
+    return algo(graph)
 
 # 根据 layout_name 得到对应布局方式
 def choose_layout(layout_name):
@@ -42,6 +46,7 @@ def choose_layout(layout_name):
         return nx.planar_layout
     if layout_name == 'spiral':
         return nx.spiral_layout
+    raise RuntimeError('no layout named ' + layout_name)
 
 # 根据 graph_type 得到图的类型
 def choose_graph(graph_type):
@@ -49,22 +54,26 @@ def choose_graph(graph_type):
         return nx.Graph()
     if graph_type == 'digraph':
         return nx.DiGraph()
+    raise RuntimeError('no graph type named ' + graph_type)
 
 # 根据 layout 和 methods 的设置对 graph 施以可视化
 def process_methods(graph, layout, methods, is_weighted):
+    graph = nx.convert_node_labels_to_integers(graph)
+
     layout_algo = choose_layout(layout)
     results = []
     for method in methods:
-        callable_method = choose_algo(method)
+        community_set = choose_algo(graph, is_weighted, method)
+
         current = {}
         current['method'] = method.replace('_', ' ').title()
-        current['modularity'] = calc_modularity(graph, callable_method)
-        current['coverage'], current['performance'] = calc_partition_quality(
-            graph, callable_method)
+        current['modularity'] = nx_com.quality.modularity(graph, community_set)
+        current['coverage'], current['performance'] = \
+            nx_com.quality.partition_quality(graph, community_set)
         current['graph_viz'] = graph_viz(
-            graph, callable_method, layout_algo, is_weighted).getvalue()
+            graph, community_set, layout_algo).getvalue()
         current['size_distribution'] = size_distribution(
-            graph, callable_method, is_weighted).getvalue()
+            community_set).getvalue()
 
         results.append(current)
     return results
@@ -77,18 +86,26 @@ def visualize(request):
         config = json.loads(data['config'])
         methods, layout = config['methods'], config['layout']
 
+        if 'custom_method' in config:
+            # TODO: 自定义方法
+            pass
+
         graph_data = json.loads(data['graph_data'])
-        graph = choose_graph(graph_data['graph_type'])
-        is_weighted = graph_data['weighted']
 
         type = data['type']
         if type == 'input':
+            is_weighted = graph_data['weighted']
+            graph = choose_graph(graph_data['graph_type'])
+
             edge_list = graph_data['edge_list']
             if is_weighted:
                 graph.add_weighted_edges_from(edge_list)
             else:
                 graph.add_edges_from(edge_list)
         elif type == 'file':
+            is_weighted = graph_data['weighted']
+            graph = choose_graph(graph_data['graph_type'])
+
             edge_list = request.FILES.get('edge_list').read().split()
             ne = len(edge_list)
             if is_weighted:
@@ -100,12 +117,14 @@ def visualize(request):
                     u, v = [int(val) for val in edge_list[i:i+2]]
                     graph.add_edge(u, v)
         elif type == 'example':
+            is_weighted = False
             graph = get_example(graph_data['name'])
         elif type == 'generate':
             n, k, p = graph_data['n'], graph_data['k'], graph_data['p']
             seed = None
             if 'seed' in graph_data:
                 seed = graph_data['seed']
+            is_weighted = False
             graph = nx.generators.random_graphs.newman_watts_strogatz_graph(
                 n, k, p, seed)
         else:
@@ -115,6 +134,7 @@ def visualize(request):
             'results': process_methods(graph, layout, methods, is_weighted),
             }
         return JsonResponse(content)
+
 
 def get_example(network_name):
     graph = nx.Graph()
