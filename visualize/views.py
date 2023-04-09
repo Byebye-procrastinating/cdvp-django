@@ -162,7 +162,7 @@ def visualize(request):
         else:
             return JsonResponse()
 
-        if config['custom_method']:
+        if 'custom_method' in config and config['custom_method']:
             file_list = request.FILES.getlist('code')
             # TODO:  更改文件夹名 hash_code
             path = (os.path.abspath('.') + '/hash_code').replace('\\', '/')
