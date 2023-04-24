@@ -21,30 +21,29 @@ def easy_asyn_lpa_communities(G, weight=None, seed=None):
 
 # 根据 algorithm_name 得到对应算法
 def choose_algo(graph, is_weighted, algorithm_name):
-    if algorithm_name == 'greedy_modularity_maximization':
-        algo = nx_com.greedy_modularity_communities
-    elif algorithm_name == 'louvain_community_detection':
-        algo = nx_com.louvain.louvain_communities
-    elif algorithm_name == 'label_propagation':
-        algo = nx_com.label_propagation_communities
-    elif algorithm_name == 'asynchronous_label_propagation':
-        algo = easy_asyn_lpa_communities
-    else:
+    ALGORITHMS = {
+        'greedy_modularity_maximization': nx_com.greedy_modularity_communities,
+        'louvain_community_detection': nx_com.louvain.louvain_communities,
+        'label_propagation': nx_com.label_propagation_communities,
+        'asynchronous_label_propagation': easy_asyn_lpa_communities,
+    }
+    if algorithm_name not in ALGORITHMS:
         raise RuntimeError('no method named ' + algorithm_name)
+    algo = ALGORITHMS[algorithm_name]
     if is_weighted:
         return algo(graph, weight='weight')
     return algo(graph)
 
 
 def choose_karateclub_algo(graph, model_name):
-    if model_name == 'GEMSEC':
-        model = kc_com_n.GEMSEC()
-    elif model_name == 'EdMot':
-        model = kc_com_n.EdMot()
-    elif model_name == 'SCD':
-        model = kc_com_n.SCD()
-    else:
+    MODELS = {
+        'GEMSEC': kc_com_n.GEMSEC(),
+        'EdMot': kc_com_n.EdMot(),
+        'SCD': kc_com_n.SCD(),
+    }
+    if model_name not in MODELS:
         raise RuntimeError('no model named ' + model_name)
+    model = MODELS[model_name]
     model.fit(graph)
     memberships = model.get_memberships()
     community_set = {}
@@ -58,27 +57,27 @@ def choose_karateclub_algo(graph, model_name):
 
 # 根据 layout_name 得到对应布局方式
 def choose_layout(layout_name):
-    if layout_name == 'spring':
-        return nx.spring_layout
-    if layout_name == 'circular':
-        return nx.circular_layout
-    if layout_name == 'kamada_kawai':
-        return nx.kamada_kawai_layout
-    if layout_name == 'shell':
-        return nx.shell_layout
-    if layout_name == 'planar':
-        return nx.planar_layout
-    if layout_name == 'spiral':
-        return nx.spiral_layout
-    raise RuntimeError('no layout named ' + layout_name)
+    LAYOUTS = {
+        'spring': nx.spring_layout,
+        'circular': nx.circular_layout,
+        'kamada_kawai': nx.kamada_kawai_layout,
+        'shell': nx.shell_layout,
+        'planar': nx.planar_layout,
+        'spiral': nx.spiral_layout,
+    }
+    if layout_name not in LAYOUTS:
+        raise RuntimeError('no layout named ' + layout_name)
+    return LAYOUTS[layout_name]
 
 # 根据 graph_type 得到图的类型
 def choose_graph(graph_type):
-    if graph_type == 'graph':
-        return nx.Graph()
-    if graph_type == 'digraph':
-        return nx.DiGraph()
-    raise RuntimeError('no graph type named ' + graph_type)
+    TYPES = {
+        'graph': nx.Graph(),
+        'digraph': nx.DiGraph(),
+    }
+    if graph_type not in TYPES:
+        raise RuntimeError('no graph type named ' + graph_type)
+    return TYPES[graph_type]
 
 # 根据 layout 和 methods 的设置对 graph 施以可视化
 def process_methods(graph, layout, methods, is_weighted):
@@ -90,7 +89,7 @@ def process_methods(graph, layout, methods, is_weighted):
         current = {}
 
         if method == 'custom':
-            community_set = {}
+            community_set = get_output()
             current['method'] = 'Custom'
         elif 'karateclub' in method:
             formed_method = method.split('_', 1)[-1]
@@ -100,8 +99,6 @@ def process_methods(graph, layout, methods, is_weighted):
         else:
             community_set = choose_algo(graph, is_weighted, method)
             current['method'] = method.replace('_', ' ').title()
-
-        print(method, community_set)
 
         current['modularity'] = nx_com.quality.modularity(graph, community_set)
         current['coverage'], current['performance'] = \
@@ -186,15 +183,15 @@ def visualize(request):
 
 
 def get_example(network_name):
-    graph = nx.Graph()
-    if network_name == 'karate_club':
-        graph = nx.karate_club_graph()
-    if network_name == 'davis_southern_women':
-        graph = nx.davis_southern_women_graph()
-    if network_name == 'florentine_families':
-        graph = nx.florentine_families_graph()
-    if network_name == 'les_miserables':
-        graph = nx.les_miserables_graph()
+    EXAMPLES = {
+        'karate_club': nx.karate_club_graph(),
+        'davis_southern_women': nx.davis_southern_women_graph(),
+        'florentine_families': nx.florentine_families_graph(),
+        'les_miserables': nx.les_miserables_graph(),
+    }
+    if network_name not in EXAMPLES:
+        raise RuntimeError('no example named ' + network_name)
+    graph = EXAMPLES[network_name]
     return nx.convert_node_labels_to_integers(graph)
 
 # 根据请求选择样例
