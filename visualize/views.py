@@ -115,7 +115,7 @@ def process_methods(graph, layout, methods, is_weighted, filepath = ''):
 
 def visualize(request):
     if request.method == 'POST':
-        path = ""
+        filepath = ''
         data = request.POST
 
         config = json.loads(data['config'])
