@@ -1,4 +1,5 @@
 import json, os, time
+import re
 
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
@@ -10,7 +11,7 @@ import networkx.algorithms.community as nx_com
 from .forms import GraphVizForm
 from .visualization import graph_viz, size_distribution
 from .docker_engine.docker_eni import get_output
-
+from datetime import datetime
 
 def easy_asyn_lpa_communities(G, weight=None, seed=None):
     community_set = []
@@ -80,7 +81,7 @@ def choose_graph(graph_type):
     return TYPES[graph_type]
 
 # 根据 layout 和 methods 的设置对 graph 施以可视化
-def process_methods(graph, layout, methods, is_weighted):
+def process_methods(graph, layout, methods, is_weighted, filepath = ''):
     graph = nx.convert_node_labels_to_integers(graph)
 
     layout_algo = choose_layout(layout)
@@ -89,7 +90,7 @@ def process_methods(graph, layout, methods, is_weighted):
         current = {}
 
         if method == 'custom':
-            community_set = get_output()
+            community_set = get_output(filepath)
             current['method'] = 'Custom'
         elif 'karateclub' in method:
             formed_method = method.split('_', 1)[-1]
@@ -114,6 +115,7 @@ def process_methods(graph, layout, methods, is_weighted):
 
 def visualize(request):
     if request.method == 'POST':
+        path = ""
         data = request.POST
 
         config = json.loads(data['config'])
@@ -159,12 +161,27 @@ def visualize(request):
         else:
             return JsonResponse()
 
-        if 'custom_method' in config and config['custom_method']:
+        if 'custom' in methods:
             file_list = request.FILES.getlist('code')
             # TODO:  更改文件夹名 hash_code
-            path = (os.path.abspath('.') + '/hash_code').replace('\\', '/')
+            now = str(datetime.now()).replace(' ', '_').replace('.', '_').replace(':', '_')
+            path = (os.path.abspath('.') + '/' + now).replace('\\', '/')
             for file in file_list:
                 default_storage.save(path + '/' + file.name, file)
+
+            pattern = re.compile(r"^main\.\w+$")
+
+            main_files = []
+            for file in file_list:
+                if pattern.match(file.name):
+                    main_files.append(file.name)
+
+            if len(main_files) > 1:
+                raise Exception("Multiple 'main' files found: {}".format(main_files))
+
+            if len(main_files) == 0:
+                raise Exception("No 'main' file found.")
+            filepath = path + '/' +main_files[0]
 
             with default_storage.open(path + '/' + 'dataset', 'w') as f:
                 if is_weighted:
@@ -177,7 +194,7 @@ def visualize(request):
             default_storage.save(path + '/' + 'dataset', f)
 
         content = {
-            'results': process_methods(graph, layout, methods, is_weighted),
+            'results': process_methods(graph, layout, methods, is_weighted, filepath),
             }
         return JsonResponse(content)
 
