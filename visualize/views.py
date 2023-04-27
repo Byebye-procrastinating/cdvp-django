@@ -1,6 +1,7 @@
-import json, os, time
+import json, os
 import re
 
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -163,7 +164,6 @@ def visualize(request):
 
         if 'custom' in methods:
             file_list = request.FILES.getlist('code')
-            # TODO:  更改文件夹名 hash_code
             now = str(datetime.now()).replace(' ', '_').replace('.', '_').replace(':', '_')
             path = (os.path.abspath('.') + '/' + now).replace('\\', '/')
             for file in file_list:
@@ -183,15 +183,15 @@ def visualize(request):
                 raise Exception("No 'main' file found.")
             filepath = path + '/' +main_files[0]
 
-            with default_storage.open(path + '/' + 'dataset', 'w') as f:
-                if is_weighted:
-                    weights = nx.get_edge_attributes(graph, 'weight')
-                    for edge in graph.edges:
-                        f.write(str(edge[0]) + ' ' + str(edge[1]) + str(weights[edge]) + '\n')
-                else:
-                    for edge in graph.edges:
-                        f.write(str(edge[0]) + ' ' + str(edge[1]) + '\n')
-            default_storage.save(path + '/' + 'dataset', f)
+            graph_content = ''
+            if is_weighted:
+                weights = nx.get_edge_attributes(graph, 'weight')
+                for edge in graph.edges:
+                    graph_content += str(edge[0]) + ' ' + str(edge[1]) + str(weights[edge]) + '\n'
+            else:
+                for edge in graph.edges:
+                    graph_content += str(edge[0]) + ' ' + str(edge[1]) + '\n'
+            default_storage.save(path + '/' + 'dataset', ContentFile(graph_content))
 
         content = {
             'results': process_methods(graph, layout, methods, is_weighted, filepath),
