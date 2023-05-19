@@ -1,0 +1,52 @@
+{% extends "visualize/base.html" %}
+
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block content %}
+
+<div class="container my-3">
+  <div class="row p-4 pb-0 pe-lg-0 pt-lg-5 align-items-center rounded-3 border shadow-lg">
+    <div class="col-lg-7 p-3 p-lg-5 pt-lg-3">
+      <h1 class="display-6 fw-bold lh-1 mb-3">Community Detection Visualization Platform</h1>
+      <p class="lead">An easy access community detectioin visualization platform.</p>
+      <div class="d-grid gap-2 d-md-flex justify-content-md-start mb-4 mb-lg-3">
+        <a href="{% url 'visualize:application' %}">
+        <button type="button" class="btn btn-primary btn-lg px-4 me-md-2 fw-bold">
+          Try it now
+        </button>
+        </a>
+        <a href="{% url 'visualize:features' %}">
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4">
+            Learn more
+          </button>
+        </a>
+      </div>
+    </div>
+    <div class="col-lg-4 offset-lg-1 p-0 overflow-hidden shadow-lg">
+        <img class="img-fluid rounded-lg-3" src="static/img/example-1.png" alt="" width="720">
+    </div>
+  </div>
+
+  <footer class="py-3 my-4">
+    <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+      <li class="nav-item">
+        <a href="{% url 'visualize:index' %}" class="nav-link px-2 text-muted">Home</a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'visualize:features' %}" class="nav-link px-2 text-muted">Features</a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'visualize:application' %}" class="nav-link px-2 text-muted">Application</a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'visualize:about' %}" class="nav-link px-2 text-muted">About</a>
+      </li>
+    </ul>
+    <p class="text-center text-muted">
+      &copy; 2022-2023 <a href="https://github.com/Byebye-procrastinating">Byebye-procrastinating</a>.
+    </p>
+  </footer>
+</div>
+
+{% endblock content %}

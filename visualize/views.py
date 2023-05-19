@@ -1,5 +1,4 @@
-import json, os
-import re
+import json, os, re
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -10,9 +9,10 @@ import networkx as nx
 import networkx.algorithms.community as nx_com
 
 from .forms import GraphVizForm
-from .visualization import graph_viz, size_distribution
+from .visualize import graph_viz, size_distribution
 from .docker_engine.docker_eni import get_output
 from datetime import datetime
+
 
 def easy_asyn_lpa_communities(G, weight=None, seed=None):
     community_set = []
@@ -124,8 +124,8 @@ def visualize(request):
 
         graph_data = json.loads(data['graph_data'])
 
-        type = data['type']
-        if type == 'input':
+        input_type = data['type']
+        if input_type == 'input':
             is_weighted = graph_data['weighted']
             graph = choose_graph(graph_data['graph_type'])
 
@@ -134,7 +134,7 @@ def visualize(request):
                 graph.add_weighted_edges_from(edge_list)
             else:
                 graph.add_edges_from(edge_list)
-        elif type == 'file':
+        elif input_type == 'file':
             is_weighted = graph_data['weighted']
             graph = choose_graph(graph_data['graph_type'])
 
@@ -148,10 +148,10 @@ def visualize(request):
                 for i in range(0, ne, 2):
                     u, v = [int(val) for val in edge_list[i:i+2]]
                     graph.add_edge(u, v)
-        elif type == 'example':
+        elif input_type == 'example':
             is_weighted = False
             graph = get_example(graph_data['name'])
-        elif type == 'generate':
+        elif input_type == 'generate':
             n, k, p = graph_data['n'], graph_data['k'], graph_data['p']
             seed = None
             if 'seed' in graph_data:
@@ -252,26 +252,88 @@ def application(request):
     if request.method != 'POST':
         form = GraphVizForm()
     else:
-        form = GraphVizForm(request.POST)
+        form = GraphVizForm(request.POST, request.FILES)
         if form.is_valid():
-            methods = form.cleaned_data['methods']
-            layout = form.cleaned_data['layout']
+            filepath = ''
+            data = form.cleaned_data
+            methods, layout = data['methods'], data['layout']
 
-            graph = choose_graph(form.cleaned_data['graph_type'])
-            edge_list = form.cleaned_data['graph_input'].split()
-            is_weighted = form.cleaned_data['graph_weighted']
+            input_type = data['input_type']
+            if input_type == 'input':
+                is_weighted = data['graph_weighted']
+                graph = choose_graph(data['graph_type'])
+                edge_list = data['graph_input_text'].split()
 
-            ne = len(edge_list)
-            if is_weighted:
-                for i in range(0, ne, 3):
-                    u, v, w = [int(val) for val in edge_list[i:i+3]]
-                    graph.add_edge(u, v, weight=w)
-            else:
-                for i in range(0, ne, 2):
-                    u, v = [int(val) for val in edge_list[i:i+2]]
-                    graph.add_edge(u, v)
+                ne = len(edge_list)
+                if is_weighted:
+                    for i in range(0, ne, 3):
+                        u, v, w = [int(val) for val in edge_list[i:i+3]]
+                        graph.add_edge(u, v, weight=w)
+                else:
+                    for i in range(0, ne, 2):
+                        u, v = [int(val) for val in edge_list[i:i+2]]
+                        graph.add_edge(u, v)
+            elif input_type == 'file':
+                is_weighted = data['graph_weighted']
+                graph = choose_graph(data['graph_type'])
 
-            results = process_methods(graph, layout, methods, is_weighted)
+                # TODO: file
+                edge_list = request.FILES['graph_input_file'].read().split()
+                ne = len(edge_list)
+                if is_weighted:
+                    for i in range(0, ne, 3):
+                        u, v, w = [int(val) for val in edge_list[i:i+3]]
+                        graph.add_edge(u, v, weight=w)
+                else:
+                    for i in range(0, ne, 2):
+                        u, v = [int(val) for val in edge_list[i:i+2]]
+                        graph.add_edge(u, v)
+            elif input_type == 'example':
+                is_weighted = False
+                graph = get_example(data['graph_input_example'])
+            elif input_type == 'generate':
+                n = data['generate_arg_n']
+                k = data['generate_arg_k']
+                p = data['generate_arg_p']
+                seed = data['generate_arg_seed']
+                is_weighted = False
+                graph = nx.generators.random_graphs.newman_watts_strogatz_graph(
+                    n, k, p, seed)
+
+            if 'custom' in methods:
+                file_list = request.FILES.getlist('custom_code')
+                now = str(datetime.now()).replace(' ', '_').replace('.', '_').replace(':', '_')
+                path = (os.path.abspath('.') + '/' + now).replace('\\', '/')
+                for file in file_list:
+                    default_storage.save(path + '/' + file.name, file)
+
+                pattern = re.compile(r"^main\.\w+$")
+
+                main_files = []
+                for file in file_list:
+                    if pattern.match(file.name):
+                        main_files.append(file.name)
+
+                if len(main_files) > 1:
+                    raise Exception("Multiple 'main' files found: {}".format(main_files))
+
+                if len(main_files) == 0:
+                    raise Exception("No 'main' file found.")
+                filepath = path + '/' +main_files[0]
+
+                graph_content = ''
+                if is_weighted:
+                    weights = nx.get_edge_attributes(graph, 'weight')
+                    for edge in graph.edges:
+                        graph_content += str(edge[0]) + ' ' + str(edge[1]) + str(weights[edge]) + '\n'
+                else:
+                    for edge in graph.edges:
+                        graph_content += str(edge[0]) + ' ' + str(edge[1]) + '\n'
+                default_storage.save(path + '/' + 'dataset', ContentFile(graph_content))
+
+            results = process_methods(
+                graph, layout, methods, is_weighted, filepath)
+            print(len(results))
 
     content = {
         'form_graph_input': form,

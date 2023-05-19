@@ -1,4 +1,13 @@
-#include "algorithm_from_cpp.hpp"
+#include <algorithm>
+#include <chrono>
+#include <functional>
+#include <map>
+#include <unordered_map>
+#include <numeric>
+#include <random>
+#include <vector>
+#include <iostream>
+using namespace std;
 
 struct Edge {
   int from, to, weight;
@@ -219,4 +228,32 @@ std::vector<std::vector<int> > LabelPropagation(std::vector<std::vector<int> > E
   }
   
   return discretize(community);
+}
+
+int main()
+{
+    freopen ("dataset","r",stdin);
+    freopen ("output","w",stdout);
+    int u,v,n;
+    vector<int> node;
+    vector<vector<int> > EDGE,community_set;
+    while(cin>>u>>v)
+    {
+        vector<int> x;
+        x.push_back(u); x.push_back(v);
+        node.push_back(u); node.push_back(v);
+        EDGE.push_back(x);
+    }
+    sort(node.begin(),node.end());
+    n=unique(node.begin(),node.end())-node.begin();
+    community_set = LouvainCommunityDetect(EDGE,n);
+    cout<<'[';
+    for(int i=0;i<community_set.size();++i)
+    {
+        cout<<'[';
+        for(int j=0;j<community_set[i].size();++j)
+          cout<<community_set[i][j]<<",]"[j==community_set[i].size()-1];
+        cout<<",]"[i==community_set.size()-1];
+    }
+    return 0;
 }

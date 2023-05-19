@@ -1,8 +1,0 @@
-algorithm_from_cpp.cpp
-algorithm_from_cpp.py
-algorithm_from_cpp_wrap.cxx
-setup.py
-algorithm_from_cpp.egg-info/PKG-INFO
-algorithm_from_cpp.egg-info/SOURCES.txt
-algorithm_from_cpp.egg-info/dependency_links.txt
-algorithm_from_cpp.egg-info/top_level.txt

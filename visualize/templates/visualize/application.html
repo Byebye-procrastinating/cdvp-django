@@ -1,0 +1,108 @@
+{% extends "visualize/base.html" %}
+
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block content %}
+  <div class="container">
+    <form name="graph_input" action="{% url 'visualize:application' %}" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row row-cols-2">
+        <div class="col">
+          <ul class="nav nav-tabs mb-2" id="tablist" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="input-tab" data-bs-toggle="tab" data-bs-target="#input" type="button" role="tab" aria-controls="input" aria-selected="true">
+                Input
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="file-tab" data-bs-toggle="tab" data-bs-target="#file" type="button" role="tab" aria-controls="file" aria-selected="false">
+                File
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="example-tab" data-bs-toggle="tab" data-bs-target="#example" type="button" role="tab" aria-controls="example" aria-selected="false">
+                Example
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate" type="button" role="tab" aria-controls="generate" aria-selected="false">
+                Generate
+              </button>
+            </li>
+            <script>
+              var triggerTabList = document.querySelectorAll('button[data-bs-toggle="tab"]')
+              triggerTabList.forEach(tabEl => {
+                tabEl.addEventListener('show.bs.tab', function (event) {
+                  const activeTabId = event.target.getAttribute('aria-controls')
+                  // console.log(activeTabId)
+                  document.forms['graph_input']['input_type'].value = activeTabId
+                })
+              })
+            </script>
+          </ul>
+
+          <div class="tab-content" id="tabContent">
+            <div class="tab-pane fade show active" id="input" role="tabpanel" aria-labelledby="input-tab">
+              {% bootstrap_field form_graph_input.graph_input_text %}
+              {% bootstrap_field form_graph_input.graph_type %}
+              {% bootstrap_field form_graph_input.graph_weighted %}
+            </div>
+            <div class="tab-pane fade" id="file" role="tabpanel" aria-labelledby="file-tab">
+              {% bootstrap_field form_graph_input.graph_input_file %}
+              {% bootstrap_field form_graph_input.graph_type %}
+              {% bootstrap_field form_graph_input.graph_weighted %}
+            </div>
+            <div class="tab-pane fade" id="example" role="tabpanel" aria-labelledby="example-tab">
+              {% bootstrap_field form_graph_input.graph_input_example %}
+            </div>
+            <div class="tab-pane fade" id="generate" role="tabpanel" aria-labelledby="generate-tab">
+              {% bootstrap_field form_graph_input.generate_arg_n layout="horizontal" %}
+              {% bootstrap_field form_graph_input.generate_arg_k layout="horizontal" %}
+              {% bootstrap_field form_graph_input.generate_arg_p layout="horizontal" %}
+              {% bootstrap_field form_graph_input.generate_arg_seed layout="horizontal" %}
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          {% bootstrap_field form_graph_input.input_type %}
+          {% bootstrap_field form_graph_input.methods %}
+          {% bootstrap_field form_graph_input.custom_code %}
+          {% bootstrap_field form_graph_input.layout %}
+          {% bootstrap_button "Draw" button_class="btn-primary btn-sm" %}
+        </div>
+      </div>
+    </form>
+    {% for result in results %}
+      <h3>
+        {{ result.method }}
+      </h3>
+      <div class="row">
+        <div class="col-xs">
+          Modularity: {{ result.modularity }}
+          <br>
+          Coverage: {{ result.coverage }} Performance: {{ result.performance }}
+        </div>
+        <div class="col">
+          {% autoescape off %}
+            {{ result.graph_viz }}
+          {% endautoescape %}
+        </div>
+        <div class="col">
+          {% autoescape off %}
+            {{ result.size_distribution }}
+          {% endautoescape %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!--
+  <div style="text-align: left;" class="btn-group" role="group">
+    {% bootstrap_button "Download as PNG" button_type="button" button_class="btn-secondary btn-sm" %}
+    {% bootstrap_button "Download as PDF" button_type="button" button_class="btn-secondary btn-sm" %}
+    {% bootstrap_button "Download as SVG" button_type="button" button_class="btn-secondary btn-sm" %}
+  </div>
+  -->
+
+{% endblock content %}
