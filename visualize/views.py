@@ -303,7 +303,8 @@ def application(request):
             if 'custom' in methods:
                 file_list = request.FILES.getlist('custom_code')
                 now = str(datetime.now()).replace(' ', '_').replace('.', '_').replace(':', '_')
-                path = (os.path.abspath('.') + '/' + now).replace('\\', '/')
+                path = (os.path.abspath('.') +
+                        '/.temp/' + now).replace('\\', '/')
                 for file in file_list:
                     default_storage.save(path + '/' + file.name, file)
 

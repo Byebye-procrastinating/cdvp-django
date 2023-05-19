@@ -1,3 +1,4 @@
+.temp/
 .vscode/
 
 cdvp_env/
@@ -6,5 +7,4 @@ cdvp_env/
 
 *.sqlite3
 
-output.svg
 settings.ini

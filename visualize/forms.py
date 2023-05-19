@@ -9,7 +9,7 @@ TYPE_CHOICES = (
     )
 
 EXAMPLE_CHOICES = (
-    ('karate_club', "Zachary's Karate Club"),
+    ('karate_club', "Zachary's karate club"),
     ('davis_southern_women', "Davis' Southern women social network"),
     ('florentine_families', 'Florentine families network'),
     ('les_miserables', 'Characters in the novel Les Miserables'),
@@ -80,9 +80,10 @@ class GraphVizForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        print('cleaned_data: ', cleaned_data)
 
         # TODO: form check
+        # print('cleaned_data: ', cleaned_data)
+        #
         # is_weighted = cleaned_data['graph_weighted']
         # method_list = cleaned_data['methods']
         #
