@@ -46,8 +46,7 @@ METHOD_UNWEIGHTED = (
     )
 
 class GraphVizForm(forms.Form):
-    input_type = forms.ChoiceField(
-        label='Input Type:', choices=TYPE_CHOICES, disabled=False)
+    input_type = forms.ChoiceField(label='Input Type:', choices=TYPE_CHOICES)
 
     # input
     graph_input_text = forms.CharField(

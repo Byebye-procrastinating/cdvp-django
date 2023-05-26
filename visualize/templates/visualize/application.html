@@ -35,7 +35,6 @@
               triggerTabList.forEach(tabEl => {
                 tabEl.addEventListener('show.bs.tab', function (event) {
                   const activeTabId = event.target.getAttribute('aria-controls')
-                  // console.log(activeTabId)
                   document.forms['graph_input']['input_type'].value = activeTabId
                 })
               })
@@ -79,9 +78,9 @@
       </h3>
       <div class="row">
         <div class="col-xs">
-          Modularity: {{ result.modularity }}
+          Modularity: {{ result.modularity|floatformat:5 }}
           <br>
-          Coverage: {{ result.coverage }} Performance: {{ result.performance }}
+          Coverage: {{ result.coverage|floatformat:5 }} Performance: {{ result.performance|floatformat:5 }}
         </div>
         <div class="col">
           {% autoescape off %}

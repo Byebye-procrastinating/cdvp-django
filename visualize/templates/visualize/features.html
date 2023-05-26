@@ -3,11 +3,234 @@
 {% load static %}
 
 {% block content %}
-  
-  <div>
-    <p>
-      Features
-    </p>
-  </div>
+
+<h1 id="features">Features</h1>
+<p style="text-align: left;">
+  <img src="static/img/features-0.png" alt="image-20230328211909039">
+</p>
+<p style="text-align: center;">
+  <img src="static/img/features-1.png" alt="image-20230328212200836">
+</p>
+<ul>
+<li>
+  全面集成已有算法（算法论文）
+  <ul>
+    <li>平台集成了经典社区划分算法，用户可以轻松地调用并进行可视化呈现。</li>
+  </ul>
+</li>
+<li>
+  交互操作代替专业语言
+  <ul>
+    <li>用户可以使用方便的交互选项进行可视化呈现，而不需要了解专业术语。</li>
+  </ul>
+</li>
+<li>
+  社团划分情况轻松可视化
+  <ul>
+    <li>社区划分算法的结果可以通过可视化直观地展示。</li>
+  </ul>
+</li>
+<li>支持不同算法一键横向对比
+  <ul>
+    <li>平台使用两个社区划分指标，即 NMI 和 Modularity，来直观比较不同算法的性能。</li>
+  </ul>
+</li>
+<li>自定义算法扩展 + 云编译运行
+  <ul>
+    <li>用户可自行上传数据集，或者自定参数随机生成数据集。</li>
+    <li>用户可以上传自己的算法代码，在经过云编译运行后，与内置的算法进行可视化与性能指标比较。</li>
+  </ul>
+</li>
+</ul>
+<h3 id="-">实现方法</h3>
+<p>Django + Docker 搭建平台</p>
+<h3 id="-">内置算法介绍</h3>
+<ol>
+<li>
+  Greedy Modularity Maximization：
+  <ul>
+    <li>这是一种基于贪心算法的社区检测方法，旨在最大化网络中的模块度，通过将网络划分为多个社区来实现。它的优点是速度快，适用于大型网络，但可能会陷入局部最优解。</li>
+    <li>其时间复杂度取决于网络的大小和社区数量，通常是 $O(m^2)$，其中 $m$ 是网络中的边数。</li>
+  </ul>
+</li>
+<li>
+  Louvain Community Detection：
+  <ul>
+    <li>通过迭代优化网络的模块度，将网络分解为更小的子集。与贪心算法相比，Louvain算法可以更好地处理网络中的噪声和孤立点。</li>
+    <li>可以在较大的网络上运行。复杂度为 $O(m \log n)$，其中$m$ 是网络中的边数， $n$ 是节点数。</li>
+  </ul>
+</li>
+<li>
+  Label Propagation：
+  <ul>
+    <li>将相邻节点标记为同一社区，并迭代地将社区标签传播到相邻节点。该算法易于实现且计算效率高，但在处理具有明显社区结构的网络时效果可能不佳。</li>
+    <li>该算法的时间复杂度取决于网络的大小和收敛速度，通常为 $O(n)$，其中 $m$ 是边数，$n$ 是节点数。</li>
+  </ul>
+</li>
+<li>
+  Asynchronous Label Propagation：
+  <ul>
+    <li>这是一种改进的标签传播算法，它在传播标签时考虑了节点的度和时间戳等因素，以更好地处理动态网络。该算法可以在分布式计算环境中进行，并可在处理大型网络时获得更好的性能。</li>
+    <li>该算法的时间复杂度与标签传播类似，为 $O(n)$，其中 $m$ 是边数，$n$ 是节点数。但通常具有更快的收敛速度，因为它考虑了节点的度和时间戳等因素。</li>
+  </ul>
+</li>
+</ol>
+<h3 id="layout-">Layout 算法介绍</h3>
+<p>其中n是图中的节点数</p>
+<p>——示例算法：Louvain Community Detection </p>
+<p>——示例数据集：davis southern women graph</p>
+<h2 id="spring-layout">Spring layout</h2>
+<p>The algorithm simulates a force-directed representation of the network treating edges as springs holding nodes close,
+  while treating nodes as repelling objects, sometimes called an anti-gravity force. Simulation continues until the
+  positions are close to an equilibrium. The time complexity of this algorithm is $O(n^3)$ where n is the number of nodes
+  in the graph.</p>
+<p>又称弹簧布局算法，基于物理学原理，该算法模拟了网络的力导向表示，将边缘视为弹簧，将节点紧紧抱住，同时将节点视为排斥性物体，有时称为反重力。仿真持续到位置接近平衡为止。</p>
+<p>该算法的时间复杂度为 $O(n^3)$。</p>
+<p style="text-align: center;">
+  <img src="static/img/spring-layout.png" alt="spring-layout.png">
+</p>
+<h2 id="-circular-layout-"><strong>Circular layout</strong>:</h2>
+<p>The nodes are placed on a circle at equal angles. This algorithm has a time complexity of $O(n)$ where n is the number
+  of nodes in the graph.</p>
+<p>将节点围绕中心点以圆形方式排列，使得节点与中心点的距离大致相等。</p>
+<p>这个算法的时间复杂度为 $O(n)$。</p>
+<p style="text-align: center;">
+  <img src="static/img/circular-layout.png" alt="circular-layout.png">
+</p>
+<h2 id="-kamada-kawai-layout-"><strong>Kamada-Kawai layout</strong>:</h2>
+<p>
+  The algorithm positions nodes based on minimizing a weighted sum of edge
+  lengths, where edge weights can optionally be interpreted as spring constants.
+   This algorithm is based on a physical model of springs and dampers. The time
+  complexity of this algorithm is $O(n^3)$ where n is the number of nodes in the
+  graph.
+</p>
+<p>该算法基于物理学原理，即弹簧和阻尼器的物理模型，模拟节点之间的斥力和连接线的弹簧力，以使得图形的形状尽可能地近似于一个平面。</p>
+<p>该算法的时间复杂度为 $O(n^3)$。</p>
+<p style="text-align: center;">
+  <img src="static/img/kamada-kawai-layout.png" alt="kamada-kawai-layout.png">
+</p>
+<h2 id="-shell-layout-"><strong>Shell layout</strong>:</h2>
+<p>The nodes are placed on concentric circles depending on their distance from a central node. This algorithm has a time complexity of $O(n)$ where n is the number of nodes in the graph.</p>
+<p>节点被放置在同心圆上，这取决于它们与中心节点的距离。</p>
+<p>该算法的时间复杂度为 $O(n)$。</p>
+<p style="text-align: center;">
+  <img src="static/img/shell-layout.png" alt="shell-layout.png">
+</p>
+<h2 id="-planar-layout-"><strong>Planar layout</strong>:</h2>
+<p>The algorithm positions nodes in two dimensions so that no edges overlap. This algorithm has a time complexity of %O(n \log n)$ where n is the number of nodes in the graph.</p>
+<p>该算法在两个维度上对节点进行定位，使其没有边缘重叠。</p>
+<p>该算法的时间复杂度为 $O(n \log n)$。</p>
+<p style="text-align: center;">
+  <img src="static/img/planar-layout.png" alt="planar-layout.png">
+</p>
+<h2 id="-spiral-layout-"><strong>Spiral layout</strong>:</h2>
+<p>The nodes are placed on a spiral. This algorithm has a time complexity of $O(n)$ where n is the number of nodes in the graph.</p>
+<p>节点被放置在一个螺旋形上，以便在小空间中容纳大量节点。</p>
+<p>这个算法的时间复杂度为 $O(n)$。</p>
+<p style="text-align: center;">
+  <img src="static/img/spiral-layout.png" alt="spiral-layout.png">
+</p>
+
+<h3 id="-">云编译具体流程</h3>
+<p>Docker </p>
+<p>python：</p>
+<ul>
+<li>
+  <p>python3.9-slim-buster + requirements.txt：<code>cdvp_python_docker</code></p>
+</li>
+<li>
+  <p>在<code>cdvp_python_docker</code>的image上构建新的image：将数据集以及算法代码复制进docker中</p>
+</li>
+<li>构建新image，运行主程序，输出output文件</li>
+<li>后端获得output文件，进行可视化处理</li>
+</ul>
+<p>c/cpp： </p>
+<ul>
+<li>
+  <p>gcc：latest</p>
+</li>
+<li>
+  <p>在<code>cdvp_python_docker</code>的image上构建新的image：将数据集以及算法代码复制进docker中</p>
+</li>
+<li>构建新image，运行主程序，输出output文件</li>
+<li>后端获得output文件，进行可视化处理</li>
+</ul>
+<h1 id="usage">Usage</h1>
+<h2 id="-">上传代码格式要求</h2>
+<h3 id="-">文件名要求</h3>
+<p>运行主文件名称 <code>main.py</code> or <code>main.c</code> or <code>main.cpp</code></p>
+<h3 id="-">输入输出文件方式</h3>
+<h4 id="python">python</h4>
+<h5 id="-">无向图</h5>
+<h6 id="-">输入文件</h6>
+<pre><code class="lang-Python">graph_data = <span class="hljs-keyword">open</span>(<span class="hljs-string">"dataset"</span>,<span class="hljs-string">'r'</span>).<span class="hljs-keyword">read</span>()
+G = nx.Graph()
+edge_list = str(graph_data).<span class="hljs-keyword">split</span>()
+# <span class="hljs-keyword">print</span>(edge_list)
+ne = <span class="hljs-built_in">len</span>(edge_list)
+<span class="hljs-keyword">for</span> i in <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>, ne, <span class="hljs-number">2</span>):
+  <span class="hljs-keyword">u</span>, v = <span class="hljs-keyword">int</span>(edge_list[i]), <span class="hljs-keyword">int</span>(edge_list[i + <span class="hljs-number">1</span>])
+  G.add_edge(<span class="hljs-keyword">u</span>, v)
+</code></pre>
+<h6 id="-">输出文件</h6>
+<pre><code class="lang-Python"><span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">"output.txt"</span>,<span class="hljs-string">'w'</span>) <span class="hljs-keyword">as</span> f:
+  f.<span class="hljs-built_in">write</span>()
+</code></pre>
+<h4 id="c-cpp">c/cpp</h4>
+<h5 id="-">无向图</h5>
+<h6 id="-">输入文件</h6>
+<pre><code class="lang-C++">freopen (<span class="hljs-string">"dataset"</span>,<span class="hljs-string">"r"</span>,<span class="hljs-built_in">stdin</span>);
+</code></pre>
+<h6 id="-">输出文件</h6>
+<pre><code class="lang-C">freopen (<span class="hljs-string">"output"</span>,<span class="hljs-string">"w"</span>,<span class="hljs-built_in">stdout</span>);
+<span class="hljs-built_in">cout</span>&lt;&lt;<span class="hljs-string">'['</span>;
+<span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>;i&lt;community_set.size();++i)
+{
+<span class="hljs-built_in">cout</span>&lt;&lt;<span class="hljs-string">'['</span>;
+<span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> j=<span class="hljs-number">0</span>;j&lt;community_set[i].size();++j)
+  <span class="hljs-built_in">cout</span>&lt;&lt;community_set[i][j]&lt;&lt;<span class="hljs-string">",]"</span>[j==community_set[i].size()<span class="hljs-number">-1</span>];
+<span class="hljs-built_in">cout</span>&lt;&lt;<span class="hljs-string">",]"</span>[i==community_set.size()<span class="hljs-number">-1</span>];
+}
+</code></pre>
+<h5 id="-">有向图</h5>
+<h3 id="-">输出格式规范：</h3>
+<pre><code class="lang-python">[ [<span class="hljs-number">0</span>，<span class="hljs-number">1</span>，<span class="hljs-number">2</span> ], [<span class="hljs-number">3</span>，<span class="hljs-number">4</span>，<span class="hljs-number">5</span> ] , [<span class="hljs-number">6</span>，<span class="hljs-number">7</span>，<span class="hljs-number">8</span> ] ]
+</code></pre>
+<p>类似python中列表套列表的形式，即外面一个中括号表示所有点集，内部一个中括号表示划分后的社区集合。</p>
+<p>如上例说明：该图共有9个节点，其中划分社区后，0，1，2为第一个社区，3，4，5为第二个社区，6，7，8为第三个社区</p>
+<h2 id="-">数据集格式</h2>
+<p>数字节点。</p>
+<p>数字可以是任意数字，不必从0开始。</p>
+<h3 id="-">无向图</h3>
+<pre><code class="lang-python">
+node1 node2
+node3 node4
+......
+node_n node_m
+</code></pre>
+<h3 id="-">有向图</h3>
+<pre><code class="lang-python">
+u0 v0 w0
+u1 v1 w1
+......
+un vn wn
+</code></pre>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+          processEscapes: true
+      }
+  });
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax();
+      for (var i = 0; i < all.length; ++i)
+          all[i].SourceElement().parentNode.className += ' has-jax';
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 {% endblock content %}
